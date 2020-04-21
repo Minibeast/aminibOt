@@ -23,7 +23,7 @@ multi_url = "https://beta.multitwitch.net/aminibeast"
 
 
 def time_format(sec):
-    return str(datetime.timedelta(seconds=sec))
+    return str(datetime.timedelta(seconds=int(sec)))
 
 
 def send_message(text):

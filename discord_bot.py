@@ -12,7 +12,7 @@ errorEmbed = discord.Embed(title="Error", type='rich')
 
 
 def time_format(sec):
-    return str(datetime.timedelta(seconds=sec))
+    return str(datetime.timedelta(seconds=int(sec)))
 
 
 async def smo_queue():
