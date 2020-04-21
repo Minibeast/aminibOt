@@ -12,22 +12,7 @@ errorEmbed = discord.Embed(title="Error", type='rich')
 
 
 def time_format(sec):
-    mins = sec // 60
-    sec = sec % 60
-    sec = round(sec, 3)
-    hours = mins // 60
-    mins = mins % 60
-
-    if sec < 10:
-        sec = str(0) + str(sec)
-
-    if mins < 10:
-        mins = str(0) + str(mins)
-
-    if hours < 10:
-        hours = str(0) + str(hours)
-
-    return "{0}:{1}:{2}".format(hours, mins, sec)
+    return str(datetime.timedelta(seconds=sec))
 
 
 async def smo_queue():
@@ -176,13 +161,13 @@ class MyClient(discord.Client):
 
         # print('Message from {0.author}: {0.content}'.format(message))
         if message.content.startswith(prefix + "load"):
-            if message.channel.id != 689140446546755680:
+            if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
                 return
 
             await message.channel.send(await run_count())
 
         if message.content.startswith(prefix + "queue"):
-            if message.channel.id != 689140446546755680:
+            if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
                 return
             try:
                 data = (message.content.split())[1]

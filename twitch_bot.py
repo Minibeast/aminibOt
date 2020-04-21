@@ -3,6 +3,7 @@ import time
 import urllib
 import urllib.request
 import urllib.error
+import datetime
 import json
 import sys
 
@@ -22,23 +23,7 @@ multi_url = "https://beta.multitwitch.net/aminibeast"
 
 
 def time_format(sec):
-    sec = int(sec)
-    mins = sec // 60
-    sec = sec % 60
-    sec = round(sec, 3)
-    hours = mins // 60
-    mins = mins % 60
-
-    if sec < 10:
-        sec = str(0) + str(sec)
-
-    if mins < 10:
-        mins = str(0) + str(mins)
-
-    if hours < 10:
-        hours = str(0) + str(hours)
-
-    return "{0}:{1}:{2}".format(hours, mins, sec)
+    return str(datetime.timedelta(seconds=sec))
 
 
 def send_message(text):
