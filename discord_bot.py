@@ -151,6 +151,73 @@ async def user_queue(user):
     return embed
 
 
+async def world_records():
+    records = {"data": []}
+    try:
+        main_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/games/76r55vd8/records?miscellaneous=no&scope=full-game&top=1").read())
+        ce_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/games/m1mxxw46/records?miscellaneous=no&scope=full-game&top=1").read())
+    except urllib.error.URLError:
+        return errorEmbed
+
+    for x in main_records["data"]:
+        try:
+            records["data"].append({"category": x["category"], "time": x["runs"][0]["run"]["times"]["primary_t"]})
+        except LookupError:
+            continue
+
+    for x in ce_records["data"]:
+        try:
+            records["data"].append({"category": x["category"], "time": x["runs"][0]["run"]["times"]["primary_t"]})
+        except LookupError:
+            continue
+    try:
+        main_queue = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/runs?game=76r55vd8&status=new&direction=asc&orderby=date&embed=players,category.variables&max=200").read())
+        ce_queue = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/runs?game=m1mxxw46&status=new&direction=asc&orderby=date&embed=players,category.variables&max=200").read())
+    except urllib.error.URLError:
+        return errorEmbed
+
+    embed = discord.Embed(title="World Records", url="https://www.speedrun.com/smo", type='rich', timestamp=datetime.datetime.now(), color=discord.Color.blurple())
+
+    embed.set_thumbnail(url="https://www.speedrun.com/themes/smo/cover-256.png")
+
+    embed.set_author(
+        name="speedrun.com",
+        url="https://speedrun.com",
+        icon_url=client.user.avatar_url)
+
+    for x in main_queue["data"]:
+        for i in records["data"]:
+            if x["category"]["data"]["id"] == i["category"]:
+                if x["times"]["primary_t"] < i["time"]:
+                    if len(embed) > 5800:
+                        break
+                    try:
+                        embed.add_field(name=(x["category"]["data"]["name"]),
+                                        value="[" + time_format(x["times"]["primary_t"]) + "](" + x["weblink"] + ") by " + x["players"]["data"][0]["names"]["international"])
+                    except LookupError:
+                        embed.add_field(
+                            name=(x["category"]["data"]["name"]),
+                            value="[" + time_format(x["times"]["primary_t"]) + "](" + x[
+                                "weblink"])
+
+    for x in ce_queue["data"]:
+        for i in records["data"]:
+            if x["category"]["data"]["id"] == i["category"]:
+                if x["times"]["primary_t"] < i["time"]:
+                    if len(embed) > 5800:
+                        break
+                    try:
+                        embed.add_field(name=(x["category"]["data"]["name"]),
+                                        value="[" + time_format(x["times"]["primary_t"]) + "](" + x[
+                                            "weblink"] + ") by " + x["players"]["data"][0]["names"]["international"])
+                    except LookupError:
+                        embed.add_field(
+                            name=(x["category"]["data"]["name"]),
+                            value="[" + time_format(x["times"]["primary_t"]) + "](" + x[
+                                "weblink"])
+    return embed
+
+
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
@@ -165,6 +232,12 @@ class MyClient(discord.Client):
                 return
 
             await message.channel.send(await run_count())
+
+        if message.content.startswith(prefix + "records"):
+            if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
+                return
+
+            await message.channel.send(embed=await world_records())
 
         if message.content.startswith(prefix + "queue"):
             if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
