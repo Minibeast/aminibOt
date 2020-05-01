@@ -154,8 +154,8 @@ async def user_queue(user):
 async def world_records():
     records = {"data": []}
     try:
-        main_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/games/76r55vd8/records?miscellaneous=no&scope=full-game&top=1").read())
-        ce_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/games/m1mxxw46/records?miscellaneous=no&scope=full-game&top=1").read())
+        main_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/games/76r55vd8/records?miscellaneous=no&scope=full-game&top=1&max=200").read())
+        ce_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/games/m1mxxw46/records?miscellaneous=no&scope=full-game&top=1&max=200").read())
     except urllib.error.URLError:
         return errorEmbed
 
@@ -166,6 +166,16 @@ async def world_records():
             continue
 
     for x in ce_records["data"]:
+        # Fetches Pending requests
+        # (can be imported to work with min caps; harder to predict results with min caps [2 sub-cats])
+        if x["category"] == "9d84we7k":
+            pending_records = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/variables/rn14rmpn").read())
+            records["data"].append({"category": "Pending", "data": []})
+            for i in pending_records["data"]["values"]["values"]:
+                pending_cat_lb = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/leaderboards/m1mxxw46/category/9d84we7k?top=1&var-rn14rmpn=" + str(i)).read())
+                records["data"][len(records["data"]) - 1]["data"].append({"category": str(i), "time": pending_cat_lb["data"]["runs"][0]["run"]["times"]["primary_t"], "label": pending_records["data"]["values"]["values"][i]["label"]})
+            continue
+
         try:
             records["data"].append({"category": x["category"], "time": x["runs"][0]["run"]["times"]["primary_t"]})
         except LookupError:
@@ -201,6 +211,23 @@ async def world_records():
                                 "weblink"])
 
     for x in ce_queue["data"]:
+        if "rn14rmpn" in x["values"]:
+            for i in records["data"][len(records["data"]) - 1]["data"]:
+                if x["values"]["rn14rmpn"] == i["category"]:
+                    if x["times"]["primary_t"] < i["time"]:
+                        if len(embed) > 5800:
+                            break
+                        try:
+                            embed.add_field(name=("Pending - " + i["label"]),
+                                            value="[" + time_format(x["times"]["primary_t"]) + "](" + x[
+                                                "weblink"] + ") by " + x["players"]["data"][0]["names"][
+                                                      "international"])
+                        except LookupError:
+                            embed.add_field(
+                                name=("Pending - " + i["label"]),
+                                value="[" + time_format(x["times"]["primary_t"]) + "](" + x[
+                                    "weblink"])
+
         for i in records["data"]:
             if x["category"]["data"]["id"] == i["category"]:
                 if x["times"]["primary_t"] < i["time"]:
