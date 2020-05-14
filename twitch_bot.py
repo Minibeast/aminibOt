@@ -48,12 +48,12 @@ while True:
 
 while True:
     for line in str(s.recv(1024)).split('\\r\\n'):
+        if "PING" in line:
+            s.send(bytes("PONG :tmi.twitch.tv\r\n", "UTF-8"))
+
         parts = line.split(':')
         if len(parts) < 3:
             continue
-
-        if "PING" in parts[1]:
-            s.send(bytes("PONG :tmi.twitch.tv", "UTF-8"))
 
         if "QUIT" not in parts[1] and "JOIN" not in parts[1] and "PART" not in parts[1]:
             message = parts[2][:len(parts[2])]
@@ -101,56 +101,10 @@ while True:
 
             send_message(text)
 
-        elif message.startswith("!add"):
-            check = True
-
-            if username == "aminibeast":
-                try:
-                    cmd = message.split()[1]
-                    text_arr = message.split()[2:]
-                    text = ""
-                    for x in text_arr:
-                        text += x + " "
-
-                    for x in commands["data"]:
-                        if x["name"] == cmd:
-                            check = False
-                            break
-
-                    if check:
-                        commands["data"].append({"name":  cmd, "text":  text})
-
-                        with open("commands.json", "w+") as writeFile:
-                            writeFile.write(json.dumps(commands))
-
-                        send_message("@aMinibeast -> the command " + str(cmd) + " has been added successfully")
-                    else:
-                        send_message("@aMinibeast -> the command already exists")
-                except LookupError:
-                    send_message("@aMinibeast command hasn't been used correctly")
-
-        elif message.startswith("!remove"):
-            cmdIndex = 0
-            check = False
-
-            if username == "aminibeast":
-                try:
-                    command = message.split()[1]
-
-                    while cmdIndex < len(commands):
-                        if commands["data"][cmdIndex]["name"] == command:
-                            check = True
-                            break
-                        cmdIndex += 1
-
-                    if check:
-                        commands["data"].remove(cmdIndex)
-                        send_message("@aMinibeast -> the command " + str(command) + " has been removed successfully")
-                    else:
-                        send_message("@aMinibeast -> the command does not exist")
-
-                except LookupError:
-                    send_message("@aMinibeast command hasn't been used correctly")
+        elif message.startswith("!update"):
+            with open("commands.json") as cmd:
+                commands = json.loads(cmd.read())
+                send_message("@aMinibeast -> successfully read commands.json")
 
         else:
             for x in commands["data"]:
