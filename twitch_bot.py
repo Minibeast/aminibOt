@@ -72,7 +72,7 @@ while True:
                     for x in names:
                         multi_url += "/" + str(x)
 
-                send_message("@aMinibeast command updated successfully")
+                send_message("@aMinibeast -> command updated successfully")
 
             else:
                 send_message(multi_url)
@@ -104,7 +104,7 @@ while True:
         elif message.startswith("!update"):
             with open("commands.json") as cmd:
                 commands = json.loads(cmd.read())
-                send_message("@aMinibeast -> successfully read commands.json")
+                send_message("@aMinibeast -> successfully read commands file")
 
         else:
             for x in commands["data"]:
