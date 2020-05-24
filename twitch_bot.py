@@ -152,6 +152,9 @@ while True:
                 KFR_Guesses = False
                 KFR_Guesses_List = []
 
+            else:
+                send_message("@aMinibeast -> gs to start race, gr to reset, gf to finish, gquit to end")
+
         elif message.startswith("!update"):
             with open("commands.json") as cmd:
                 commands = json.loads(cmd.read())
