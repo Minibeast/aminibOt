@@ -247,6 +247,8 @@ async def world_records():
 
 class MyClient(discord.Client):
     async def on_ready(self):
+        status = discord.Game(name="github.com/Minibeast/aminibot")
+        await client.change_presence(status=discord.Status.dnd, activity=status)
         print('Logged on as {0}!'.format(self.user))
 
     async def on_message(self, message):
@@ -254,12 +256,6 @@ class MyClient(discord.Client):
             return
 
         # print('Message from {0.author}: {0.content}'.format(message))
-        if message.content.startswith(prefix + "load"):
-            if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
-                return
-
-            await message.channel.send(await run_count())
-
         if message.content.startswith(prefix + "records"):
             if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
                 return
