@@ -20,6 +20,29 @@ s.send(bytes("NICK " + NICK + "\r\n", "UTF-8"))
 s.send(bytes("JOIN #" + CHAN + " \r\n", "UTF-8"))
 
 multi_url = "https://beta.multitwitch.net/aminibeast"
+
+KFR_Guesses = False
+# {"username": "test", "guess": "1:06:25"}
+KFR_Guesses_List = []
+
+
+def get_kfr_winners(time):
+    KFR_Guesses_List.pop(len(KFR_Guesses_List) - 1)
+    winner_array = []
+
+    for x in KFR_Guesses_List:
+        if time in x["guess"]:
+            winner_array.append(x["username"])
+
+    if len(winner_array) > 0:
+        result = "Winners: "
+        for x in winner_array:
+            result += str(x) + " "
+        return result
+    else:
+        return "No Winners"
+
+
 with open("commands.json") as cmd:
     commands = json.loads(cmd.read())
 
@@ -63,6 +86,9 @@ while True:
         usernamesplit = parts[1].split("!")
         username = usernamesplit[0]
 
+        if KFR_Guesses:
+            KFR_Guesses_List.append({"username": str(username), "guess": message})
+
         # print(username + ": " + message)
         if message.startswith("!multi"):
             names = message.split()[1:]
@@ -100,6 +126,31 @@ while True:
                 "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/n2y5jwek?top=1" + date)
 
             send_message(text)
+
+        elif message.startswith("!g") and username == "aminibeast":
+            if message.startswith("!gs"):
+                if not KFR_Guesses:
+                    KFR_Guesses = True
+                else:
+                    send_message("@aMinibeast -> KFR_Guesses is already enabled")
+            elif message.startswith("!gr") and KFR_Guesses is True:
+                try:
+                    send_message(get_kfr_winners(message.split()[1]))
+                    KFR_Guesses_List = []
+                except LookupError:
+                    send_message("@aMinibeast -> No time given")
+
+            elif message.startswith("!gf") and KFR_Guesses is True:
+                try:
+                    send_message(get_kfr_winners(message.split()[1]))
+                    KFR_Guesses = False
+                    KFR_Guesses_List = []
+                except LookupError:
+                    send_message("@aMinibeast -> No time given")
+
+            elif message.startswith("!gquit") and KFR_Guesses is True:
+                KFR_Guesses = False
+                KFR_Guesses_List = []
 
         elif message.startswith("!update"):
             with open("commands.json") as cmd:
