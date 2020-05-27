@@ -274,6 +274,7 @@ class MyClient(discord.Client):
                     await message.channel.send("<@" + str(message.author.id) + ">, Only ascii characters are valid. "
                                                                                "Please type the username without "
                                                                                "accents (ex: Orolmë becomes Orolme)")
+                    return
 
                 userembed = await user_queue(data)
                 await message.channel.send("<@" + str(message.author.id) + "> ", embed=userembed)
