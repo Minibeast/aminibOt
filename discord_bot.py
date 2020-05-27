@@ -268,6 +268,13 @@ class MyClient(discord.Client):
             try:
                 data = (message.content.split())[1]
 
+                try:
+                    data.encode("ascii")
+                except UnicodeEncodeError:
+                    await message.channel.send("<@" + str(message.author.id) + ">, Only ascii characters are valid. "
+                                                                               "Please type the username without "
+                                                                               "accents (ex: Orolmë becomes Orolme)")
+
                 userembed = await user_queue(data)
                 await message.channel.send("<@" + str(message.author.id) + "> ", embed=userembed)
             except LookupError:
