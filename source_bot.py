@@ -1,10 +1,5 @@
 import socket
 import time
-import urllib
-import urllib.request
-import urllib.error
-import datetime
-import json
 import sys
 
 HOST = "irc.twitch.tv"
@@ -20,21 +15,9 @@ s.send(bytes("NICK " + NICK + "\r\n", "UTF-8"))
 s.send(bytes("JOIN #" + CHAN + " \r\n", "UTF-8"))
 
 
-def time_format(sec):
-    return str(datetime.timedelta(seconds=int(sec)))
-
-
 def send_message(text):
     s.send(bytes("PRIVMSG #" + CHAN + " :" + text + "\r\n", "UTF-8"))
     time.sleep(1)
-
-
-def get_time(url):
-    try:
-        data = json.loads(urllib.request.urlopen(url).read())
-        return time_format(data["data"]["runs"][0]["run"]["times"]["primary_t"])
-    except LookupError or urllib.error.URLError:
-        return "Error"
 
 
 while True:
