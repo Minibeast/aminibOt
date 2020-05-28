@@ -6,7 +6,10 @@ import urllib.error
 import datetime
 import sys
 
-prefix = "!"
+PREFIX = "!"
+QUEUE_CHANNELS = [689140446546755680, 439215885572505602]
+SERVER = 630534093813317662
+ROLE_ID = 650547547743715378
 
 errorEmbed = discord.Embed(title="Error", type='rich')
 
@@ -256,14 +259,14 @@ class MyClient(discord.Client):
             return
 
         # print('Message from {0.author}: {0.content}'.format(message))
-        if message.content.startswith(prefix + "records"):
-            if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
+        if message.content.startswith(PREFIX + "records"):
+            if message.channel.id not in QUEUE_CHANNELS:
                 return
 
             await message.channel.send(embed=await world_records())
 
-        if message.content.startswith(prefix + "queue"):
-            if message.channel.id != 689140446546755680 and message.channel.id != 439215885572505602:
+        if message.content.startswith(PREFIX + "queue"):
+            if message.channel.id not in QUEUE_CHANNELS:
                 return
             try:
                 data = (message.content.split())[1]
@@ -276,31 +279,31 @@ class MyClient(discord.Client):
                                                                                "accents (ex: Orolmë becomes Orolme)")
                     return
 
-                userembed = await user_queue(data)
-                await message.channel.send("<@" + str(message.author.id) + "> ", embed=userembed)
+                await message.channel.send("<@" + str(message.author.id) + "> ", embed=await user_queue(data))
             except LookupError:
-                mainembed = await smo_queue()
-                await message.channel.send("<@" + str(message.author.id) + "> ", embed=mainembed)
-                ceembed = await smoce_queue()
-                await message.channel.send(embed=ceembed)
+                await message.channel.send("<@" + str(message.author.id) + "> ", embed=await smo_queue())
+                await message.channel.send(embed=await smoce_queue())
 
-        if message.content.startswith(prefix + "role"):
+        if message.content.startswith(PREFIX + "role"):
+            if message.guild.id != SERVER:
+                return
+
             member = message.author
-            role = discord.utils.find(lambda r: r.id == 650547547743715378, message.guild.roles)
+            role = discord.utils.find(lambda r: r.id == ROLE_ID, message.guild.roles)
             if role in member.roles:
                 await member.remove_roles(role)
                 await message.channel.send(
                     content="<@" + str(member.id) + ">, you will no longer receive stream notifications",
                     delete_after=3
                 )
-                await message.delete(delay=1)
+                await message.delete()
             else:
                 await member.add_roles(role)
                 await message.channel.send(
                     content="<@" + str(member.id) + ">, you will now receive stream notifications",
                     delete_after=3
                 )
-                await message.delete(delay=1)
+                await message.delete()
 
 
 client = MyClient()
