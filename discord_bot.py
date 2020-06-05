@@ -18,12 +18,20 @@ def time_format(sec):
     return str(datetime.timedelta(seconds=int(sec)))
 
 
-async def smo_queue():
-    try:
-        data = json.loads(urllib.request.urlopen(
-            "https://www.speedrun.com/api/v1/runs?game=76r55vd8&status=new&direction=asc&orderby=date&embed=players,category.variables").read())
-    except urllib.error.URLError:
-        return errorEmbed
+async def smo_queue(date=""):
+    if date is None:
+        try:
+            data = json.loads(urllib.request.urlopen(
+                "https://www.speedrun.com/api/v1/runs?game=76r55vd8&status=new&direction=asc&orderby=date&embed=players,category.variables").read())
+        except urllib.error.URLError:
+            return errorEmbed
+
+    else:
+        try:
+            data = json.loads(urllib.request.urlopen(
+                "https://www.speedrun.com/api/v1/runs?game=76r55vd8&status=new&direction=asc&orderby=date&embed=players,category.variables&max=200").read())
+        except urllib.error.URLError:
+            return errorEmbed
 
     embed = discord.Embed(title="Super Mario Odyssey", url="https://www.speedrun.com/smo", type='rich',
                           color=discord.Color.blurple(), timestamp=datetime.datetime.now())
@@ -36,28 +44,39 @@ async def smo_queue():
         icon_url=client.user.avatar_url)
 
     i = 0
+    x = 0
 
-    while i <= 10 and i < len(data["data"]):
-        try:
-            embed.add_field(name=(data["data"][i]["category"]["data"]["name"]),
-                            value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
-                                "weblink"] + ") by " + data["data"][i]["players"]["data"][0]["names"]["international"])
-        except LookupError:
-            embed.add_field(
-                name=(data["data"][i]["category"]["data"]["name"]),
-                value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
-                    "weblink"])
+    while x <= 10 and i < len(data["data"]):
+        if len(date) == 0 or (len(date) > 0 and data["data"][i]["date"] == str(date)):
+            try:
+                embed.add_field(name=(data["data"][i]["category"]["data"]["name"]),
+                                value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
+                                    "weblink"] + ") by " + data["data"][i]["players"]["data"][0]["names"]["international"])
+            except LookupError:
+                embed.add_field(
+                    name=(data["data"][i]["category"]["data"]["name"]),
+                    value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
+                        "weblink"])
+            x += 1
         i += 1
 
     return embed
 
 
-async def smoce_queue():
-    try:
-        data = json.loads(urllib.request.urlopen(
-            "https://www.speedrun.com/api/v1/runs?game=m1mxxw46&status=new&direction=asc&orderby=date&embed=players,category.variables").read())
-    except urllib.error.URLError:
-        return errorEmbed
+async def smoce_queue(date=""):
+    if date is None:
+        try:
+            data = json.loads(urllib.request.urlopen(
+                "https://www.speedrun.com/api/v1/runs?game=m1mxxw46&status=new&direction=asc&orderby=date&embed=players,category.variables").read())
+        except urllib.error.URLError:
+            return errorEmbed
+
+    else:
+        try:
+            data = json.loads(urllib.request.urlopen(
+                "https://www.speedrun.com/api/v1/runs?game=m1mxxw46&status=new&direction=asc&orderby=date&embed=players,category.variables&max=200").read())
+        except urllib.error.URLError:
+            return errorEmbed
 
     embed = discord.Embed(title="Super Mario Odyssey Category Extensions", url="https://www.speedrun.com/smoce",
                           type='rich', color=discord.Color.blurple(), timestamp=datetime.datetime.now())
@@ -70,18 +89,21 @@ async def smoce_queue():
         icon_url=client.user.avatar_url)
 
     i = 0
+    x = 0
 
-    while i <= 10 and i < len(data["data"]):
-        try:
-            embed.add_field(
-                name=(data["data"][i]["category"]["data"]["name"]),
-                value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
-                    "weblink"] + ") by " + data["data"][i]["players"]["data"][0]["names"]["international"])
-        except LookupError:
-            embed.add_field(
-                name=(data["data"][i]["category"]["data"]["name"]),
-                value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
-                    "weblink"])
+    while x <= 10 and i < len(data["data"]):
+        if len(date) == 0 or (len(date) > 0 and data["data"][i]["date"] == str(date)):
+            try:
+                embed.add_field(
+                    name=(data["data"][i]["category"]["data"]["name"]),
+                    value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
+                        "weblink"] + ") by " + data["data"][i]["players"]["data"][0]["names"]["international"])
+            except LookupError:
+                embed.add_field(
+                    name=(data["data"][i]["category"]["data"]["name"]),
+                    value="[" + time_format(data["data"][i]["times"]["primary_t"]) + "](" + data["data"][i][
+                        "weblink"])
+            x += 1
         i += 1
 
     return embed
@@ -265,7 +287,22 @@ class MyClient(discord.Client):
 
             await message.channel.send(embed=await world_records())
 
-        if message.content.startswith(PREFIX + "queue"):
+        elif message.content.startswith(PREFIX + "queuedate"):
+            if message.channel.id not in QUEUE_CHANNELS:
+                return
+            try:
+                date = message.content.split()[1]
+                date = int(date)
+            except ValueError or LookupError:
+                await message.channel.send("<@" + str(message.author.id) + ">, Not a valid number")
+                return
+
+            formatted_date = datetime.datetime.now() - datetime.timedelta(days=date)
+            formatted_date = formatted_date.strftime("%Y-%m-%d")
+            await message.channel.send("<@" + str(message.author.id) + "> ", embed=await smo_queue(date=formatted_date))
+            await message.channel.send(embed=await smoce_queue(date=formatted_date))
+
+        elif message.content.startswith(PREFIX + "queue"):
             if message.channel.id not in QUEUE_CHANNELS:
                 return
             try:
@@ -284,7 +321,7 @@ class MyClient(discord.Client):
                 await message.channel.send("<@" + str(message.author.id) + "> ", embed=await smo_queue())
                 await message.channel.send(embed=await smoce_queue())
 
-        if message.content.startswith(PREFIX + "role"):
+        elif message.content.startswith(PREFIX + "role"):
             if message.guild.id != SERVER:
                 return
 
