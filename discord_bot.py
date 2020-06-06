@@ -137,25 +137,26 @@ async def run_count():
     return message
 
 
-async def user_queue(user):
+async def user_queue(user, search_index=0):
     try:
-        initData = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/users?lookup=" + str(user)).read())["data"][0]
+        initData = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/users?lookup=" + str(user)).read())
+        user_info = initData["data"][search_index]
     except urllib.error.URLError:
         return errorEmbed
     except LookupError:
         try:
             tempData = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/users/" + str(user)).read())
+            user_info = tempData["data"]
         except urllib.error.URLError or LookupError:
             return errorEmbed
-        return await user_queue(tempData["data"]["names"]["international"])
 
     try:
-        queueData = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/runs?user=" + str(initData["id"])
+        queueData = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/runs?user=" + str(user_info["id"])
                                                       + "&status=new&embed=players,category.variables").read())
     except urllib.error.URLError:
         return errorEmbed
 
-    embed = discord.Embed(title=str(initData["names"]["international"]), url=str(initData["weblink"]), type='rich',
+    embed = discord.Embed(title=str(user_info["names"]["international"]), url=str(user_info["weblink"]), type='rich',
                           color=discord.Color.blurple(), timestamp=datetime.datetime.now())
 
     embed.set_author(
@@ -293,7 +294,10 @@ class MyClient(discord.Client):
             try:
                 date = message.content.split()[1]
                 date = int(date)
-            except ValueError or LookupError:
+            except LookupError:
+                await message.channel.send("<@" + str(message.author.id) + ">, No number given")
+                return
+            except ValueError:
                 await message.channel.send("<@" + str(message.author.id) + ">, Not a valid number")
                 return
 
@@ -306,17 +310,21 @@ class MyClient(discord.Client):
             if message.channel.id not in QUEUE_CHANNELS:
                 return
             try:
-                data = (message.content.split())[1]
+                data = message.content.split()
+                if len(data) > 2:
+                    index = data[2]
+                else:
+                    index = 0
 
                 try:
-                    data.encode("ascii")
+                    data[1].encode("ascii")
                 except UnicodeEncodeError:
                     await message.channel.send("<@" + str(message.author.id) + ">, Only ascii characters are valid. "
                                                                                "Please type the username without "
                                                                                "accents (ex: Orolmë becomes Orolme)")
                     return
 
-                await message.channel.send("<@" + str(message.author.id) + "> ", embed=await user_queue(data))
+                await message.channel.send("<@" + str(message.author.id) + "> ", embed=await user_queue(data[1], search_index=int(index)))
             except LookupError:
                 await message.channel.send("<@" + str(message.author.id) + "> ", embed=await smo_queue())
                 await message.channel.send(embed=await smoce_queue())
