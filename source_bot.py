@@ -6,18 +6,20 @@ HOST = "irc.twitch.tv"
 PORT = 6667
 NICK = "aminibOt"
 PASS = str(sys.argv[1])  # OAuth run through argument
-CHAN = "source28"
+CHANNELS = ["source28", "sailo93"]
 
 s = socket.socket()
 s.connect((HOST, PORT))
 s.send(bytes("PASS " + PASS + "\r\n", "UTF-8"))
 s.send(bytes("NICK " + NICK + "\r\n", "UTF-8"))
-s.send(bytes("JOIN #" + CHAN + " \r\n", "UTF-8"))
+for x in CHANNELS:
+    s.send(bytes("JOIN #" + str(x) + " \r\n", "UTF-8"))
 
 
 def send_message(text):
-    s.send(bytes("PRIVMSG #" + CHAN + " :" + text + "\r\n", "UTF-8"))
-    time.sleep(1)
+    for x in CHANNELS:
+        s.send(bytes("PRIVMSG #" + str(x) + " :" + text + "\r\n", "UTF-8"))
+        time.sleep(1)
 
 
 while True:
@@ -46,8 +48,8 @@ while True:
         if username.startswith("manofsteel"):
             send_message("/ban " + str(username))
 
-        elif message.startswith("!kill") and username == "source28":
+        elif message.startswith("!kill") and username == "aminibeast":
             quit()
 
-        elif message.startswith("!test") and username == "source28":
-            send_message("ping pong the bot is alive")
+        elif message.startswith("!test") and (username in CHANNELS or username == "aminibeast"):
+            send_message("ping")
