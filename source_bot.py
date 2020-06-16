@@ -6,7 +6,7 @@ HOST = "irc.twitch.tv"
 PORT = 6667
 NICK = "aminibOt"
 PASS = str(sys.argv[1])  # OAuth run through argument
-CHANNELS = ["source28", "sailo93"]
+CHANNELS = ["source28", "sailo93", "cjya2016"]
 
 s = socket.socket()
 s.connect((HOST, PORT))
@@ -19,7 +19,6 @@ for x in CHANNELS:
 def send_message(text):
     for x in CHANNELS:
         s.send(bytes("PRIVMSG #" + str(x) + " :" + text + "\r\n", "UTF-8"))
-        time.sleep(1)
 
 
 while True:
