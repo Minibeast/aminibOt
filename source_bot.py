@@ -49,10 +49,7 @@ while True:
         username = usernamesplit[0]
 
         # print(username + ": " + message)
-        if username.startswith("manofsteel"):
-            send_message("/ban " + str(username))
-
-        elif message.startswith("!kill") and (username == "aminibeast" or username == "source28"):
+        if message.startswith("!kill") and (username == "aminibeast" or username == "source28"):
             quit()
 
         elif message.startswith("!user"):
