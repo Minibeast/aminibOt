@@ -5,7 +5,7 @@ HOST = "irc.twitch.tv"
 PORT = 6667
 NICK = "aminibOt"
 PASS = str(sys.argv[1])  # OAuth run through argument
-CHANNELS = ["sailo93", "cjya2016", "l1ghtrc"]
+CHANNELS = ["sailo93", "cjya", "l1ghtrc"]
 
 s = socket.socket()
 s.connect((HOST, PORT))
