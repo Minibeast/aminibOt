@@ -25,6 +25,9 @@ KFR_Guesses = False
 # {"username": "test", "guess": "1:06:25"}
 KFR_Guesses_List = []
 
+wr_category = "lvdowokp" # Portal Out of Bounds
+wr_string = "The WR for Portal Out of Bounds is "
+
 
 def get_kfr_winners(time):
     KFR_Guesses_List.pop(len(KFR_Guesses_List) - 1)
@@ -59,9 +62,22 @@ def send_message(text):
 def get_time(url):
     try:
         data = json.loads(urllib.request.urlopen(url).read())
-        return time_format(data["data"]["runs"][0]["run"]["times"]["primary_t"])
+        wr_time = time_format(data["data"]["runs"][0]["run"]["times"]["primary_t"])
+        wr_user = data["data"]["players"]["data"][0]["names"]["international"]
+        return wr_string + wr_time + " by " + str(wr_user)
     except LookupError or urllib.error.URLError:
+        return wr_string + "Error"
+
+
+def get_category():
+    try:
+        category = json.loads(urllib.request.urlopen("https://www.speedrun.com/api/v1/categories/" + wr_category + "?embed=game").read())
+    except urllib.error.URLError:
         return "Error"
+
+    global wr_string
+    wr_string = "The WR for " + str(category["data"]["game"]["data"]["names"]["international"]) + " " + str(category["data"]["name"]) + " is "
+    return get_time(category["data"]["links"][5]["uri"] + "?top=1&embed=players")
 
 
 while True:
@@ -104,28 +120,14 @@ while True:
                 send_message(multi_url)
 
         elif message.startswith("!wr"):
-            text = ""
+            send_message(get_category())
 
+        elif message.startswith("!setwr") and username == "aminibeast":
             try:
-                date = "&date=" + str(message.split()[1])
+                wr_category = str(message.split()[1])
+                send_message("Updated successfully")
             except LookupError:
-                date = ""
-            text += "Any%: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/w20w1lzd?top=1&var-68km3w4l=zqoyz021" + date)
-            text += ", Any% 2P: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/w20w1lzd?top=1&var-68km3w4l=013vz03l" + date)
-            text += ", World Peace: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/vdooo3yd?top=1" + date)
-            text += ", Dark Side: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/wdmw4e42?top=1" + date)
-            text += ", Darker Side: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/vdooqjod?top=1" + date)
-            text += ", All Moons: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/wk6719ed?top=1" + date)
-            text += ", 100%: " + get_time(
-                "https://www.speedrun.com/api/v1/leaderboards/76r55vd8/category/n2y5jwek?top=1" + date)
-
-            send_message(text)
+                send_message("Please run the command with a category ID")
 
         elif message.startswith("!g") and username == "aminibeast":
             if message.startswith("!gs"):
