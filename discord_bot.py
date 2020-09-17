@@ -11,6 +11,11 @@ QUEUE_CHANNELS = [689140446546755680, 439215885572505602]
 SERVER = 630534093813317662
 ROLE_ID = 650547547743715378
 
+
+REACT_SERVER = 640640211981959181
+REACT_CHANNEL = 756194739098877992
+
+
 errorEmbed = discord.Embed(title="Error", type='rich')
 
 
@@ -276,6 +281,32 @@ class MyClient(discord.Client):
         status = discord.Game(name="github.com/Minibeast/aminibot")
         await client.change_presence(status=discord.Status.dnd, activity=status)
         print('Logged on as {0}!'.format(self.user))
+
+    async def on_reaction_add(self, reaction, user):
+        message = reaction.message
+        if message.guild.id != REACT_SERVER:
+            return
+
+        if reaction.emoji != "🥴":
+            return
+
+        if reaction.count == 5:
+            webhook_channel = discord.utils.find(lambda c: c.id == REACT_CHANNEL, message.channel.guild.channels)
+            try:
+                webhook = await webhook_channel.webhooks()
+                webhook = webhook[0]
+            except discord.errors.Forbidden and LookupError:
+                return
+
+            files = []
+            embeds = message.embeds
+            embeds.append(discord.Embed(description="[Jump](" + message.jump_url + ")"))
+
+            for x in message.attachments:
+                files.append(await x.to_file())
+
+            await webhook.send(content=message.content, username=message.author.name,
+                               avatar_url=message.author.avatar_url, files=files, embeds=embeds)
 
     async def on_message(self, message):
         if message.author == client.user:
