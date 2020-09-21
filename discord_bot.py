@@ -290,7 +290,7 @@ class MyClient(discord.Client):
         if reaction.emoji != "🥴":
             return
 
-        if reaction.count == 5:
+        if reaction.count == 3:
             webhook_channel = discord.utils.find(lambda c: c.id == REACT_CHANNEL, message.channel.guild.channels)
             try:
                 webhook = await webhook_channel.webhooks()
