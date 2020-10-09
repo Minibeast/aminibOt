@@ -12,9 +12,18 @@ SERVER = 630534093813317662
 ROLE_ID = 650547547743715378
 
 
-REACT_SERVER = 640640211981959181
-REACT_CHANNEL = 756194739098877992
+REACT_SERVER = 640640211981959181 # Discount Bois
+REACT_CHANNEL = 756194739098877992 # good-messages
 
+REACT2_SERVER = 686725610449797135 # Krusty Krab
+REACT2_CHANNEL = 763944837002821662 # Pins
+
+"""
+REACT2_SERVER = 339790925029048321 # Ian's Testing Server
+REACT2_CHANNEL = 763947145848946718 # code-testing-2
+"""
+
+HANDLED_STARBOARD = []
 
 errorEmbed = discord.Embed(title="Error", type='rich')
 
@@ -284,29 +293,56 @@ class MyClient(discord.Client):
 
     async def on_reaction_add(self, reaction, user):
         message = reaction.message
-        if message.guild.id != REACT_SERVER:
-            return
-
-        if reaction.emoji != "🥴":
-            return
-
-        if reaction.count == 3:
-            webhook_channel = discord.utils.find(lambda c: c.id == REACT_CHANNEL, message.channel.guild.channels)
-            try:
-                webhook = await webhook_channel.webhooks()
-                webhook = webhook[0]
-            except discord.errors.Forbidden and LookupError:
+        if message.guild.id == REACT_SERVER:
+            if reaction.emoji != "🥴":
                 return
 
-            files = []
-            embeds = message.embeds
-            embeds.append(discord.Embed(description="[Jump](" + message.jump_url + ")"))
+            if message.channel.id == REACT_CHANNEL:
+                return
 
-            for x in message.attachments:
-                files.append(await x.to_file())
+            if reaction.count == 3 and message.id not in HANDLED_STARBOARD:
+                webhook_channel = discord.utils.find(lambda c: c.id == REACT_CHANNEL, message.channel.guild.channels)
+                try:
+                    webhook = await webhook_channel.webhooks()
+                    webhook = webhook[0]
+                except discord.errors.Forbidden and LookupError:
+                    return
 
-            await webhook.send(content=message.content, username=message.author.name,
-                               avatar_url=message.author.avatar_url, files=files, embeds=embeds)
+                files = []
+                embeds = message.embeds
+                embeds.append(discord.Embed(description="[Jump](" + message.jump_url + ")"))
+
+                for x in message.attachments:
+                    files.append(await x.to_file())
+
+                await webhook.send(content=message.content, username=message.author.name,
+                                   avatar_url=message.author.avatar_url, files=files, embeds=embeds)
+                HANDLED_STARBOARD.append(message.id)
+        elif message.guild.id == REACT2_SERVER:
+            if reaction.emoji != "📌":
+                return
+
+            if message.channel.id == REACT2_CHANNEL:
+                return
+
+            if message.id not in HANDLED_STARBOARD:
+                webhook_channel = discord.utils.find(lambda c: c.id == REACT2_CHANNEL, message.channel.guild.channels)
+                try:
+                    webhook = await webhook_channel.webhooks()
+                    webhook = webhook[0]
+                except discord.errors.Forbidden and LookupError:
+                    return
+
+                files = []
+                embeds = message.embeds
+                embeds.append(discord.Embed(description="[Jump](" + message.jump_url + ")"))
+
+                for x in message.attachments:
+                    files.append(await x.to_file())
+
+                await webhook.send(content=message.content, username=message.author.name,
+                                   avatar_url=message.author.avatar_url, files=files, embeds=embeds)
+                HANDLED_STARBOARD.append(message.id)
 
     async def on_message(self, message):
         if message.author == client.user:
@@ -380,6 +416,58 @@ class MyClient(discord.Client):
                     delete_after=3
                 )
                 await message.delete()
+
+        elif message.content.startswith(PREFIX + "starboardadd") and message.author.id == 258002965833449472:
+            try:
+                id = message.content.split()[1]
+            except LookupError:
+                return
+
+            if message.guild.id == REACT_SERVER:
+                starboard_msg = await message.channel.fetch_message(id)
+
+                if starboard_msg.id not in HANDLED_STARBOARD:
+                    webhook_channel = discord.utils.find(lambda c: c.id == REACT_CHANNEL,
+                                                         message.channel.guild.channels)
+                    try:
+                        webhook = await webhook_channel.webhooks()
+                        webhook = webhook[0]
+                    except discord.errors.Forbidden and LookupError:
+                        return
+
+                    files = []
+                    embeds = starboard_msg.embeds
+                    embeds.append(discord.Embed(description="[Jump](" + starboard_msg.jump_url + ")"))
+
+                    for x in starboard_msg.attachments:
+                        files.append(await x.to_file())
+
+                    await webhook.send(content=starboard_msg.content, username=starboard_msg.author.name,
+                                       avatar_url=starboard_msg.author.avatar_url, files=files, embeds=embeds)
+                    HANDLED_STARBOARD.append(starboard_msg.id)
+
+            elif message.guild.id == REACT2_SERVER:
+                starboard_msg = await message.channel.fetch_message(id)
+
+                if starboard_msg.id not in HANDLED_STARBOARD:
+                    webhook_channel = discord.utils.find(lambda c: c.id == REACT2_CHANNEL,
+                                                         message.channel.guild.channels)
+                    try:
+                        webhook = await webhook_channel.webhooks()
+                        webhook = webhook[0]
+                    except discord.errors.Forbidden and LookupError:
+                        return
+
+                    files = []
+                    embeds = starboard_msg.embeds
+                    embeds.append(discord.Embed(description="[Jump](" + starboard_msg.jump_url + ")"))
+
+                    for x in starboard_msg.attachments:
+                        files.append(await x.to_file())
+
+                    await webhook.send(content=starboard_msg.content, username=starboard_msg.author.name,
+                                       avatar_url=starboard_msg.author.avatar_url, files=files, embeds=embeds)
+                    HANDLED_STARBOARD.append(starboard_msg.id)
 
 
 client = MyClient()
